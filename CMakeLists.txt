@@ -34,7 +34,7 @@ set( EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin/apps/${THIS_DIR_NAME} )
 # See https://cmake.org/pipermail/cmake/2008-January/019290.html
 # and https://cmake.org/Wiki/CMake_RPATH_handling for details.
 # Tipp: Use `ldd binary` and `readelf -d binary` to check RPATH settings.
-set( CMAKE_INSTALL_RPATH "$ORIGIN/..:$$ORIGIN/..:$ORIGIN:$$ORIGIN" )
+set( CMAKE_INSTALL_RPATH "$ORIGIN/../..:$$ORIGIN/../..:$ORIGIN/..:$$ORIGIN/..:$ORIGIN:$$ORIGIN" )
 set( CMAKE_BUILD_WITH_INSTALL_RPATH TRUE )
 
 # ------------------------------------------------------------------------------

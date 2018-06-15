@@ -36,17 +36,33 @@ using namespace genesis::placement;
 using namespace genesis::tree;
 using namespace genesis::utils;
 
+void print_tree(Sample const& sample, std::string const& filename)
+{
+    auto layout = LayoutParameters{};
+    layout.stroke.width = 15.0;
+    layout.ladderize = false;
+
+    auto edge_masses = placement_mass_per_edges_with_multiplicities(sample);
+    auto cmap = ColorMap( color_list_viridis() );
+    auto cnorm = ColorNormalizationLinear();
+    cnorm.autoscale( edge_masses );
+    auto const colors = cmap( cnorm, edge_masses );
+
+    write_color_tree_to_svg_file( sample.tree(), layout, colors, cmap, cnorm, filename );
+}
+
 /**
- *  splits a jplace file into its  constituent samples, based on a standard OTU table
+ *  Makes a tree visualizing the differences between two jplace
  */
 int main( int argc, char** argv )
 {
+    Options::get().allow_file_overwriting(true);
     // Activate logging.
-    utils::Logging::log_to_stdout();
-    utils::Logging::details.date = true;
-    utils::Logging::details.time = true;
+    Logging::log_to_stdout();
+    Logging::details.date = true;
+    Logging::details.time = true;
 
-    utils::Options::get().number_of_threads( 4 );
+    Options::get().number_of_threads( 4 );
     LOG_BOLD << utils::Options::get().info();
     LOG_BOLD;
 
@@ -55,27 +71,45 @@ int main( int argc, char** argv )
     // Check if the command line contains the right number of arguments.
     if ( argc != 3 ) {
         throw std::runtime_error(
-            "Usage: persample <jplace-file> <jplace-file>\n"
+            std::string("Usage: ") + argv[0] + " <jplace-file> <jplace-file>\n"
         );
     }
+    auto outfile = std::string( "difftree.svg" );
 
     // In out dirs.
-    std::vector<std::string> jplace_paths;
-    for (int i = 2; i < argc; ++i) {
-        jplace_paths.push_back( std::string( argv[i] ) );
+    auto reader = JplaceReader();
+
+    auto lhs = reader.from_file(argv[1]);
+    auto rhs = reader.from_file(argv[2]);
+
+    if ( not compatible_trees(lhs, rhs) ) {
+        throw std::runtime_error{"Trees are not compatible!"};
     }
-    auto outfile = std::string( argv[1] );
-    // auto outdir = utils::dir_normalize_path( std::string( "." ));
-    // utils::dir_create(outdir);
 
+    // get imbalance vectors for both samples
+    auto imbalance_lhs = epca_imbalance_vector(lhs);
+    auto imbalance_rhs = epca_imbalance_vector(rhs);
+    assert(imbalance_lhs.size() == imbalance_rhs.size());
 
-    JplaceReader jplace_reader;
-    auto const sample_set = jplace_reader.from_files( jplace_paths );
+    // calculate the difference
+    for (size_t i = 0; i < imbalance_lhs.size(); ++i) {
+        imbalance_lhs[i] = (imbalance_lhs[i] - imbalance_rhs[i]);
+    }
 
-    auto const pwdmat = earth_movers_distance(sample_set);
+    // map onto tree
+    auto layout = LayoutParameters{};
+    layout.stroke.width = 15.0;
+    layout.ladderize = false;
+    auto cmap = ColorMap( color_list_spectral() );
+    auto cnorm = ColorNormalizationDiverging();
+    cnorm.autoscale( imbalance_lhs );
+    cnorm.make_centric();
+    auto const colors = cmap( cnorm, imbalance_lhs );
 
-    std::ofstream out(outfile);
-    out << pwdmat;
+    write_color_tree_to_svg_file( lhs.tree(), layout, colors, cmap, cnorm, outfile );
+
+    // print_tree(lhs, "lhs.svg");
+    // print_tree(rhs, "rhs.svg");
 
     LOG_INFO << "Finished";
     return 0;
