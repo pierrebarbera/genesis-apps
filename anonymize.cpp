@@ -22,10 +22,7 @@
 
 #include "genesis/genesis.hpp"
 
-#include <fstream>
 #include <string>
-#include <unordered_map>
-#include <vector>
 
 using namespace genesis;
 using namespace genesis::sequence;

@@ -1,6 +1,5 @@
 /*
-    Genesis - A toolkit for working with phylogenetic data.
-    Copyright (C) 2014-2017 Lucas Czech
+    Copyright (C) 2018 Pierre Barbera
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -16,7 +15,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
     Contact:
-    Lucas Czech <lucas.czech@h-its.org>
+    Pierre Barbera <pierre.barbera@h-its.org>
     Exelixis Lab, Heidelberg Institute for Theoretical Studies
     Schloss-Wolfsbrunnenweg 35, D-69118 Heidelberg, Germany
 */
@@ -27,17 +26,13 @@
 #include <string>
 #include <algorithm>
 
-#ifdef GENESIS_OPENMP
-#   include <omp.h>
-#endif
-
 using namespace genesis;
 using namespace genesis::placement;
 using namespace genesis::tree;
 using namespace genesis::utils;
 
 /**
- *  splits a jplace file into its  constituent samples, based on a standard OTU table
+ *  splits a jplace file into its constituent samples, based on a standard OTU table
  */
 int main( int argc, char** argv )
 {
@@ -50,7 +45,7 @@ int main( int argc, char** argv )
     // Check if the command line contains the right number of arguments.
     if (argc != 4) {
         throw std::runtime_error(
-            "Usage: persample <jplace-file> <otu-table> <out-path>\n"
+            std::string("Usage: ") + argv[0] + " <jplace-file> <otu-table> <out-path>\n"
         );
     }
 
