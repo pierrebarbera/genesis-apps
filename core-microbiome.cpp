@@ -44,7 +44,7 @@ struct CoreEntry {
 
 using Core = std::unordered_map<std::string, CoreEntry>;
 
-void parse(Core& lhs, CsvReader::Table& rhs) {
+void parse(Core& lhs, CsvReader::Table& rhs, double const fract_thresh = 0.01) {
     bool first = true;
     for (auto& row : rhs) {
         // skip header
@@ -54,6 +54,12 @@ void parse(Core& lhs, CsvReader::Table& rhs) {
         }
         auto& taxopath = row.at(4);
         double fract = atof( row.at(1).c_str() );
+
+        // filter by fract
+        if (fract < fract_thresh) {
+            continue;
+        }
+
         auto it = lhs.find( taxopath );
 
         if ( it == lhs.end() ) {
@@ -99,19 +105,21 @@ void to_stream(Core& core, std::ostream& stream) {
 int main( int argc, char** argv )
 {
     // Check if the command line contains the right number of arguments.
-    if ( argc < 3 ) {
+    if ( argc < 4 ) {
         throw std::runtime_error(
-            "Usage: core-microbiome <inclusion-threshold> <jplace-files...>\n"
-            "Where inclusion threshold is the percentage [1.0,0.0) of samples a taxon has to appear in to be included"
+            "Usage: core-microbiome <inclusion-threshold> <fract-threshold> <jplace-files...>\n"
+            "Where inclusion threshold is the percentage [1.0,0.0) of samples a taxon has to appear in to be included\n"
+            "and fract threshold is the percentage (1.0,0.0] below which a taxopath is ignored\n"
         );
     }
 
     // In out dirs.
     std::vector<std::string> profile_files;
-    for (int i = 2; i < argc; ++i) {
+    for (int i = 3; i < argc; ++i) {
         profile_files.push_back( std::string( argv[i] ) );
     }
     auto thresh = std::stod( argv[1] );
+    auto fract_thresh = std::stod( argv[2] );
 
     // read in the profiles
     CsvReader reader;
@@ -123,7 +131,7 @@ int main( int argc, char** argv )
 
     Core result;
     for (auto& profile : profiles) {
-        parse(result, profile);
+        parse(result, profile, fract_thresh);
     }
 
     to_percent_and_filter( result, profiles.size(), thresh );
