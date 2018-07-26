@@ -69,12 +69,12 @@ int main( int argc, char** argv )
     LOG_INFO << "Started";
 
     // Check if the command line contains the right number of arguments.
-    if ( argc != 3 ) {
+    if ( argc != 4 ) {
         throw std::runtime_error(
-            std::string("Usage: ") + argv[0] + " <jplace-file> <jplace-file>\n"
+            std::string("Usage: ") + argv[0] + " <jplace-file> <jplace-file> <out-name>\n"
         );
     }
-    auto outfile = std::string( "difftree.svg" );
+    auto outfile = std::string( argv[3] ) + ".svg";
 
     // In out dirs.
     auto reader = JplaceReader();

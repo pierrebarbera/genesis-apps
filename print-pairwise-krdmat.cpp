@@ -36,6 +36,18 @@ using namespace genesis::placement;
 using namespace genesis::tree;
 using namespace genesis::utils;
 
+void normalize(Sample& sample) {
+    auto const total = total_multiplicity(sample);
+
+    std::for_each(  std::begin(sample),
+                    std::end(sample),
+                    [total](Pquery& pq){
+                        for (auto& name : pq.names()) {
+                            name.multiplicity /= total;
+                        }
+                    });
+}
+
 /**
  *  splits a jplace file into its  constituent samples, based on a standard OTU table
  */
@@ -67,7 +79,11 @@ int main( int argc, char** argv )
     auto outfile = std::string( argv[1] ) + ".tsv";
 
     JplaceReader jplace_reader;
-    auto const sample_set = jplace_reader.from_files( jplace_paths );
+    auto sample_set = jplace_reader.from_files( jplace_paths );
+
+    for (auto& sample : sample_set) {
+        normalize(sample);
+    }
 
     auto const pwdmat = earth_movers_distance(sample_set);
 

@@ -36,6 +36,18 @@ using namespace genesis::placement;
 using namespace genesis::tree;
 using namespace genesis::utils;
 
+void normalize(Sample& sample) {
+    auto const total = total_multiplicity(sample);
+
+    std::for_each(  std::begin(sample),
+                    std::end(sample),
+                    [total](Pquery& pq){
+                        for (auto& name : pq.names()) {
+                            name.multiplicity /= total;
+                        }
+                    });
+}
+
 Sample read_and_merge( std::vector<std::string> const& paths )
 {
     Sample result;
@@ -58,6 +70,11 @@ Sample read_and_merge( std::vector<std::string> const& paths )
         // Read in file. This is the part that can trivially be done in parallel.
         auto smpl = JplaceReader().from_file( cur );
 
+        if (true) {
+            // normalize per-sample
+            normalize(smpl);
+        }
+
         // The main merging is single threaded.
         #pragma omp critical(GAPPA_JPLACE_INPUT_ACCUMULATE)
         {
@@ -77,6 +94,10 @@ Sample read_and_merge( std::vector<std::string> const& paths )
     }
 
     merge_duplicates( result );
+
+    if (true) {
+        normalize(result);
+    }
 
     return result;
 }
