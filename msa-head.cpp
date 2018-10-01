@@ -30,27 +30,19 @@ int main( int argc, char** argv )
 {
     // Check if the command line contains the right number of arguments.
     if (argc != 3) {
-        throw std::runtime_error(
-            std::string( "Usage: " ) + argv[0]  + " <fasta_msa> " + "<number of sequences>"
-        );
+        LOG_INFO << "Usage: " << argv[0] << " <fasta_msa> <number of sequences>";
+        return 1;
     }
 
-    // Prepare reading and writing files.
-    auto reader = FastaReader();
+    auto seq_file  = std::string( argv[1] );
+    const size_t num = std::stoi(argv[2]);
     auto writer = FastaWriter();
-    auto in_set = SequenceSet();
-    auto out_set = SequenceSet();
 
-    // Get labels of reference alignment.
-    reader.from_file( argv[1], in_set );
-
-    const auto max = std::min((size_t)std::stoi(argv[2]), in_set.size());
-
-    for (size_t i = 0; i < max; ++i) {
-        out_set.add(in_set[i]);
+    auto iter = FastaInputIterator().from_file(seq_file);
+    for (size_t i = 0; iter and (i < num); ++i) {
+        writer.write_sequence(*iter, std::cout);
+        iter.increment();
     }
-
-    writer.to_stream(out_set, std::cout);
 
     return 0;
 }
