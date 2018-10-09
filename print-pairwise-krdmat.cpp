@@ -44,7 +44,7 @@ void normalize(Sample& sample) {
 }
 
 /**
- *  splits a jplace file into its  constituent samples, based on a standard OTU table
+ *  Outputs a pairwise Phylogenetic Kantorovic-Rubinstein distance matrix for an arbitrary number of jplace files
  */
 int main( int argc, char** argv )
 {
