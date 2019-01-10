@@ -74,8 +74,8 @@ int main( int argc, char** argv )
     // In out dirs.
     auto reader = JplaceReader();
 
-    auto lhs = reader.from_file(argv[1]);
-    auto rhs = reader.from_file(argv[2]);
+    auto lhs = reader.read( from_file(argv[1]) );
+    auto rhs = reader.read( from_file(argv[2]) );
 
     if ( not compatible_trees(lhs, rhs) ) {
         throw std::runtime_error{"Trees are not compatible!"};

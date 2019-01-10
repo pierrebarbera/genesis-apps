@@ -120,7 +120,7 @@ int main( int argc, char** argv )
     reader.separator_chars("\t");
     std::vector<CsvReader::Table> profiles;
     for (auto const& p : profile_files) {
-        profiles.emplace_back( reader.from_file( p ) );
+        profiles.emplace_back( reader.read( from_file( p ) ) );
     }
 
     Core result;

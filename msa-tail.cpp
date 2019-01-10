@@ -28,6 +28,7 @@
 
 using namespace genesis;
 using namespace genesis::sequence;
+using namespace genesis::utils;
 
 int main( int argc, char** argv )
 {
@@ -45,7 +46,7 @@ int main( int argc, char** argv )
     auto out_set = SequenceSet();
 
     // Get labels of reference alignment.
-    reader.from_file( argv[1], in_set );
+    reader.read( from_file( argv[1] ), in_set );
 
     const auto max = std::min((size_t)std::stoi(argv[2]), in_set.size());
     const auto skip = in_set.size() - max;

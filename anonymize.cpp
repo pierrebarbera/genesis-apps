@@ -46,25 +46,25 @@ int main( int argc, char** argv )
         SequenceSet set;
 
         // Get labels of reference alignment.
-        FastaReader().from_file(filename , set );
+        FastaReader().read( from_file(filename) , set );
 
         for (auto& seq : set) {
-            seq.label( SHA1().from_string_hex( seq.label() ) );
+            seq.label( SHA1().read_hex( from_string( seq.label() ) ) );
         }
 
         FastaWriter().to_stream(set, std::cout);
     } else if (to_lower(filetype) == "newick") {
         // Get labels of reference alignment.
-        auto tree = DefaultTreeNewickReader().from_file( filename );
+        auto tree = CommonTreeNewickReader().read( from_file( filename ) );
 
         auto leaf_ids = leaf_node_indices( tree );
 
         for (auto id : leaf_ids) {
-            auto& name = tree.node_at( id ).data<DefaultNodeData>().name;
-            name = SHA1().from_string_hex( name );
+            auto& name = tree.node_at( id ).data<CommonNodeData>().name;
+            name = SHA1().read_hex( from_string( name ) );
         }
 
-        DefaultTreeNewickWriter().to_stream(tree, std::cout);
+        CommonTreeNewickWriter().to_stream(tree, std::cout);
     }
 
     return 0;

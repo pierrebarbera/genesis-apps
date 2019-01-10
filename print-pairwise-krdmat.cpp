@@ -61,7 +61,7 @@ int main( int argc, char** argv )
     }
 
     JplaceReader jplace_reader;
-    auto sample_set = jplace_reader.from_files( jplace_paths );
+    auto sample_set = jplace_reader.read( from_files( jplace_paths ) );
 
     for (auto& sample : sample_set) {
         normalize(sample);
@@ -70,8 +70,8 @@ int main( int argc, char** argv )
     auto const pwdmat = earth_movers_distance(sample_set);
 
     std::vector<std::string> names;
-    for ( auto const& s : sample_set ) {
-        names.push_back( s.name );
+    for ( auto const& name : sample_set.names() ) {
+        names.push_back( name );
     }
 
     MatrixWriter<double>().to_stream( pwdmat, std::cout, {}, names );

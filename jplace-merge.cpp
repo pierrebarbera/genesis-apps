@@ -67,7 +67,7 @@ Sample read_and_merge( std::vector<std::string> const& paths )
         }
 
         // Read in file. This is the part that can trivially be done in parallel.
-        auto smpl = JplaceReader().from_file( cur );
+        auto smpl = JplaceReader().read( from_file( cur ) );
 
         if (true) {
             // normalize per-sample

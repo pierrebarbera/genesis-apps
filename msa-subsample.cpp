@@ -31,6 +31,7 @@
 
 using namespace genesis;
 using namespace genesis::sequence;
+using namespace genesis::utils;
 
 bool has(const std::vector<size_t>& cont, size_t val)
 {
@@ -92,7 +93,7 @@ int main( int argc, char** argv )
     auto out_set = SequenceSet();
 
     // Get labels of reference alignment.
-    reader.from_file( argv[1], in_set );
+    reader.read( from_file( argv[1] ), in_set );
 
     remove_duplicates(in_set);
 

@@ -36,7 +36,7 @@ constexpr char QUERY[]          = "query";
 void print_labelled(Tree const& tree,
                     std::vector<Taxopath> const& node_labels )
 {
-    DefaultTreeNewickWriter writer;
+    CommonTreeNewickWriter writer;
     writer.node_to_element_plugins.push_back(
         [&]( TreeNode const& node, NewickBrokerElement& element ){
             element.comments.emplace_back(
@@ -96,20 +96,20 @@ std::vector<Taxopath> label_nodes(  Tree const& tree,
             throw std::runtime_error{"Could not find node with name: " + name};
         }
 
-        node_labels[ node_ptr->index() ] = tpp.from_string( tax_string );
+        node_labels[ node_ptr->index() ] = tpp.parse( tax_string );
     }
 
     // check if any leafs weren't assigned a Taxopath
     // for ( auto const& node_it : tree.nodes() ) {
     //     if ( node_it->is_leaf() and node_labels[ node_it->index() ].empty() ) {
-    //         auto name = node_it->data< DefaultNodeData >().name;
+    //         auto name = node_it->data< CommonNodeData >().name;
     //         throw std::runtime_error{"The leaf in the tree labelled '" + name
     //             + "' wasn't assigned a taxonomic path. Did you forget to include it in the taxon file?"};
     //     }
     // }
     // go through the tree in postorder fashion and label inner nodes according to the most common taxonomic rank of the children
     for ( auto it : postorder(tree) ) {
-        if ( it.node().is_inner() ) {
+        if ( is_inner( it.node() ) ) {
             auto const child_1_idx = it.node().link().next().outer().node().index();
             auto const child_2_idx = it.node().link().next().next().outer().node().index();
 
@@ -159,11 +159,69 @@ void print_query_taxassign( std::ostream& stream,
     // print all the query labels
     for ( auto const i : query_tip_indices ) {
         // output sativa-style taxassign
-        stream << tree.node_at(i).data<DefaultNodeData>().name;
+        stream << tree.node_at(i).data<CommonNodeData>().name;
         stream << "\t" << TaxopathGenerator().to_string( node_labels[i] );
         // stream << "\t" << join( confidences, ";" );
         stream << "\n";
     }
+}
+
+std::vector<std::string> read_lines( std::string const& file_name )
+{
+    std::vector<std::string> lines;
+    std::ifstream f( file_name );
+    std::copy(  std::istream_iterator<std::string>( f ),
+                std::istream_iterator<std::string>(),
+                std::back_inserter( lines ));
+    return lines;
+}
+
+TreeEdge* lowest_common_ancestor( Tree& tree, std::vector<TreeNode const*>& nodes )
+{
+    assert( not nodes.empty() );
+
+    auto bipart = find_smallest_subtree( tree, bipartition_set( tree ), nodes );
+
+    if ( bipart.empty() ) {
+        throw std::invalid_argument{"Rooting could not be determined."};
+    }
+
+    return const_cast<TreeEdge*>( &bipart.link().edge() );
+
+}
+
+void outgroup_rooting(  Tree& tree,
+                        std::vector<std::string> const& outgroup_names )
+{
+    if ( is_rooted( tree ) ) {
+        throw std::invalid_argument{"Function only valid for unrooted trees."};
+    }
+    // find MRCA edge containing all outgroup taxa
+    std::vector<TreeNode const*> nodes;
+    for ( auto& name : outgroup_names ) {
+        auto node_ptr = find_node( tree, name );
+
+        if ( node_ptr == nullptr ) {
+            throw std::invalid_argument{name + " was not found in the tree!"};
+        }
+
+        nodes.push_back( node_ptr );
+    }
+
+    TreeEdge* edge_ptr = nullptr;
+
+    if ( nodes.size() == 0 ) {
+        throw std::invalid_argument{"Outgroup file didn't contain any valid taxa."};
+    } else if ( nodes.size() == 1 ) {
+        edge_ptr = const_cast<TreeEdge*>(&( nodes[0]->primary_link().edge() ));
+    } else {
+        edge_ptr = lowest_common_ancestor( tree, nodes );
+    }
+
+    assert( edge_ptr );
+
+    // root on that edge
+    make_rooted( tree, *edge_ptr );
 }
 
 /**
@@ -174,16 +232,25 @@ void print_query_taxassign( std::ostream& stream,
 int main( int argc, char** argv )
 {
     // Check if the command line contains the right number of arguments.
-    if (argc != 3) {
+    if (argc < 3 or argc > 4) {
         throw std::runtime_error(
-            std::string( "Usage: " ) + argv[0] + " <tree_file> <taxonomy_file>"
+            std::string( "Usage: " ) + argv[0] + " <tree_file> <taxonomy_file> [<outgroup_file>]"
         );
     }
 
     std::string tree_file(argv[1]);
     std::string taxon_file(argv[2]);
 
-    auto tree = DefaultTreeNewickReader().from_file( tree_file );
+
+    auto tree = CommonTreeNewickReader().read( from_file( tree_file ) );
+
+    if ( argc == 4 ) {
+        if ( is_rooted( tree ) ) {
+            throw std::invalid_argument{"Trying to root an already rooted tree."};
+        }
+        std::string outgroup_file( argv[3] );
+        outgroup_rooting( tree, read_lines( outgroup_file ) );
+    }
 
     auto node_labels = label_nodes(tree, taxon_file);
 

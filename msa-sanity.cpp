@@ -29,6 +29,7 @@
 
 using namespace genesis;
 using namespace genesis::sequence;
+using namespace genesis::utils;
 
 int main( int argc, char** argv )
 {
@@ -51,7 +52,7 @@ int main( int argc, char** argv )
     auto set = SequenceSet();
 
     // Get labels of reference alignment.
-    reader.from_file( argv[1], set );
+    reader.read( from_file( argv[1] ), set );
 
     auto sites = set[0].size();
     LOG_INFO << "Sites: " << sites;

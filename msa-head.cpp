@@ -25,6 +25,7 @@
 
 using namespace genesis;
 using namespace genesis::sequence;
+using namespace genesis::utils;
 
 int main( int argc, char** argv )
 {
@@ -38,7 +39,7 @@ int main( int argc, char** argv )
     const size_t num = std::stoi(argv[2]);
     auto writer = FastaWriter();
 
-    auto iter = FastaInputIterator().from_file(seq_file);
+    auto iter = FastaInputIterator( from_file(seq_file) );
     for (size_t i = 0; iter and (i < num); ++i) {
         writer.write_sequence(*iter, std::cout);
         iter.increment();

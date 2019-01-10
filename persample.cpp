@@ -59,7 +59,7 @@ int main( int argc, char** argv )
     //     demangle jplace file based on OTU table
     // -------------------------------------------------------------------------
     JplaceReader jplace_reader;
-    auto in_sample = jplace_reader.from_file( jplacefile );
+    auto in_sample = jplace_reader.read( from_file( jplacefile ) );
 
     LOG_INFO << "Finished reading input jplace file: " << jplacefile;
 
@@ -68,7 +68,7 @@ int main( int argc, char** argv )
     csvreader.separator_chars("\t");
     csvreader.comment_chars("#");
 
-    auto table = csvreader.from_file( otufile );
+    auto table = csvreader.read( from_file( otufile ) );
 
     LOG_INFO << "Finished reading OTU table: " << otufile;
 
