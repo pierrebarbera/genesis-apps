@@ -167,6 +167,10 @@ int main( int argc, char** argv )
 
     auto sampleset = JplaceReader().read( from_files( jplace_files ) );
 
+    if ( sampleset.empty() ) {
+	throw std::invalid_argument{"Must supply at least one valid jplace file!"};
+    }
+
     size_t total_entries=0;
     for (auto& sample : sampleset) {
         total_entries += sample.size();
@@ -200,7 +204,9 @@ int main( int argc, char** argv )
         size_t for_stddev_5 = 0;
     };
 
-    std::vector<blamestruct> blame(total_entries);
+    size_t const total_edges = sampleset[0].tree().edge_count();
+
+    std::vector<blamestruct> blame( total_edges );
 
     for (auto& sample : sampleset) {
 
