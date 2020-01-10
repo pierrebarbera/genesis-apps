@@ -45,6 +45,7 @@ int main( int argc, char** argv )
     }
 
     Options::get().allow_file_overwriting(true);
+    Logging::log_to_stdout();
 
     std::string tree_file(argv[1]);
     std::string msa_file(argv[2]);
@@ -65,12 +66,13 @@ int main( int argc, char** argv )
     // for every leaf ID
     auto leaf_ids = leaf_node_indices( original_tree );
     for (auto id : leaf_ids) {
-
         // make a copy to manipulate (relatively costly but much safer than trying to undo changes)
         CommonTree tree( original_tree );
 
         auto& leaf_node = tree.node_at( id );
         auto& base_node = leaf_node.link().outer().node();
+        assert( &leaf_node.link().next() == &leaf_node.link() );
+        assert( is_leaf(leaf_node) );
         // auto& prox_node = base_node.link().outer().node();
 
         auto const leaf_name = leaf_node.data<CommonNodeData>().name;
@@ -78,25 +80,29 @@ int main( int argc, char** argv )
         auto const pendant_length   = leaf_node.primary_edge().data<CommonEdgeData>().branch_length;
         auto const proximal_length  = base_node.primary_edge().data<CommonEdgeData>().branch_length;
 
-
-        // track edge that will become the leftover edge in the pruned tree
-        auto& attach_edge = base_node.primary_edge();
-
         // remove leaf from tree
         delete_leaf_node( tree, leaf_node );
-        delete_linear_node( tree, base_node );
+
+        // track edge that will become the leftover edge in the pruned tree
+        CommonTreeEdge* attach_edge_ptr = &base_node.primary_edge();
+
+        // remove
+        delete_linear_node( tree, base_node, []( TreeEdge& r_edge, TreeEdge& d_edge ){
+            r_edge.data<CommonEdgeData>().branch_length += d_edge.data<CommonEdgeData>().branch_length;
+        } );
 
         // determine edge_num of edge where we pruned
         size_t edge_num = 0;
         for( auto const& it : postorder( tree ) ) {
             if( it.is_last_iteration() ) { continue; }
 
-            edge_num++;
-
-            if( &it.edge() == &attach_edge ) {
+            if( &it.edge() == attach_edge_ptr ) {
                 break;
+            } else {
+                edge_num++;
             }
         }
+        fail( edge_num >= edge_count( tree ), std::to_string(edge_num) + " vs. " + std::to_string( edge_count( tree ) ) );
         assert( edge_num < edge_count( tree ) );
 
         // make an output dir for this leaf
@@ -121,6 +127,16 @@ int main( int argc, char** argv )
 
         PhylipWriter().to_file( seq_set, cur_out_dir + "query.phylip" );
 
+        // write out ref msa
+        SequenceSet ref_set( msa );
+        for (auto it = ref_set.begin(); it != ref_set.end(); ++it) {
+            if( it->label() == leaf_name ) {
+                ref_set.remove( it );
+                break;
+            }
+        }
+
+        PhylipWriter().to_file( ref_set, cur_out_dir + "reference.phylip" );
     }
 
     return 0;

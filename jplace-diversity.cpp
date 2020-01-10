@@ -99,7 +99,7 @@ double BWPD( Sample const& sample, g_func_t g_func, Args... args )
         classical FaithPD, except adapted to phylogenetic placement.
     */
 
-    assert( theta >= 0.0 and theta <= 1.0 );
+    // assert( theta >= 0.0 and theta <= 1.0 );
 
     // we start by first calculating D(i) for every edge in the tree
     // which we do bottom-up, post-order, dragging with us previous distal-side
@@ -176,7 +176,7 @@ double MassTreeBWPD( MassTree const& mass_tree, g_func_t g_func, Args... args )
         classical FaithPD, except adapted to phylogenetic placement.
     */
 
-    assert( theta >= 0.0 and theta <= 1.0 );
+    // assert( theta >= 0.0 and theta <= 1.0 );
 
     // we start by first calculating D(i) for every edge in the tree
     // which we do bottom-up, post-order, dragging with us previous distal-side
