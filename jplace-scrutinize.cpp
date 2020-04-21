@@ -271,7 +271,7 @@ int main( int argc, char** argv )
     std::cout   << "Number of input files:\t"<< sampleset.size() << "\n";
     std::cout   << "Number of queries:\t"    << total_entries << "\n";
 
-    auto minmax = minimum_maximum( std::begin(pendant_lengths), std::end(pendant_lengths) );
+    auto minmax = finite_minimum_maximum( std::begin(pendant_lengths), std::end(pendant_lengths) );
     auto meanstddev = mean_stddev( std::begin(pendant_lengths), std::end(pendant_lengths) );
     auto med = median( std::begin(pendant_lengths), std::end(pendant_lengths) );
 
