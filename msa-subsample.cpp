@@ -22,91 +22,88 @@
 
 #include "genesis/genesis.hpp"
 
+#include <algorithm>
 #include <fstream>
+#include <random>
 #include <string>
 #include <unordered_map>
 #include <vector>
-#include <random>
-#include <algorithm>
 
 using namespace genesis;
 using namespace genesis::sequence;
 using namespace genesis::utils;
 
-bool has(const std::vector<size_t>& cont, size_t val)
+bool has( const std::vector< size_t >& cont, size_t val )
 {
-    return ( std::find(std::begin(cont), std::end(cont), val) != std::end(cont) );
+  return ( std::find( std::begin( cont ), std::end( cont ), val ) != std::end( cont ) );
 }
 
-std::vector<size_t> get_rand_unique(const size_t num, const size_t min, const size_t max)
+std::vector< size_t > get_rand_unique( const size_t num, const size_t min, const size_t max )
 {
-    std::vector<size_t> ret;
-    ret.reserve(num);
+  std::vector< size_t > ret;
+  ret.reserve( num );
 
-    assert(min <= max);
+  assert( min <= max );
 
-    std::random_device rd;
-    std::mt19937 dom(rd());
-    std::uniform_int_distribution<size_t> ran(min, max);
+  std::random_device rd;
+  std::mt19937 dom( rd() );
+  std::uniform_int_distribution< size_t > ran( min, max );
 
-    size_t to_add = num;
-    while (to_add > 0) {
-        auto rand_num = ran(dom);
-        if ( not has(ret, rand_num) ) {
-            ret.push_back(rand_num);
-            --to_add;
-        }
+  size_t to_add = num;
+  while( to_add > 0 ) {
+    auto rand_num = ran( dom );
+    if( not has( ret, rand_num ) ) {
+      ret.push_back( rand_num );
+      --to_add;
     }
+  }
 
-    return ret;
+  return ret;
 }
 
-void remove_duplicates(SequenceSet& set)
+void remove_duplicates( SequenceSet& set )
 {
-    std::unordered_set<std::string> labels;
+  std::unordered_set< std::string > labels;
 
-    auto new_end =
-        std::remove_if(
-            std::begin(set),
-            std::end(set),
-            [&] ( Sequence const& seq ) {
-                return ( not labels.insert(seq.label()).second );
-            }
-        );
+  auto new_end = std::remove_if(
+      std::begin( set ),
+      std::end( set ),
+      [&]( Sequence const& seq ) {
+        return ( not labels.insert( seq.label() ).second );
+      } );
 
-    set.remove(new_end, std::end(set));
+  set.remove( new_end, std::end( set ) );
 }
 
 int main( int argc, char** argv )
 {
-    // Check if the command line contains the right number of arguments.
-    if (argc != 3) {
-        throw std::runtime_error(
-            std::string( "Usage: " ) + argv[0]  + " <fasta_msa> <number of sequences>"
-        );
-    }
+  // Check if the command line contains the right number of arguments.
+  if( argc != 3 ) {
+    throw std::runtime_error(
+        std::string( "Usage: " ) + argv[ 0 ] + " <fasta_msa> <number of sequences>" );
+  }
 
-    // Prepare reading and writing files.
-    auto reader = FastaReader();
-    auto writer = FastaWriter();
-    auto in_set = SequenceSet();
-    auto out_set = SequenceSet();
+  // Prepare reading and writing files.
+  auto reader  = FastaReader();
+  auto writer  = FastaWriter();
+  auto in_set  = SequenceSet();
+  auto out_set = SequenceSet();
 
-    // Get labels of reference alignment.
-    reader.read( from_file( argv[1] ), in_set );
+  // Get labels of reference alignment.
+  reader.read( from_file( argv[ 1 ] ), in_set );
 
-    remove_duplicates(in_set);
+  remove_duplicates( in_set );
 
-    const auto num = static_cast<size_t>(std::stoi(argv[2]));
+  const auto num = static_cast< size_t >( std::stoi( argv[ 2 ] ) );
 
-    // get random indices
-    auto idx = get_rand_unique(num, 0, in_set.size());
+  // get random indices
+  auto idx = get_rand_unique( num, 0, in_set.size() );
 
-    for (auto i : idx) {
-        out_set.add(in_set[i]);
-    }
+  for( auto i : idx ) {
+    out_set.add( in_set[ i ] );
+  }
 
-    writer.to_stream(out_set, std::cout);
+  writer.to_stream( out_set, std::cout );
 
-    return 0;
+  return 0;
 }

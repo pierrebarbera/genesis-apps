@@ -22,81 +22,78 @@
 
 #include "genesis/genesis.hpp"
 
+#include <algorithm>
 #include <fstream>
 #include <string>
-#include <algorithm>
 
 using namespace genesis;
 using namespace genesis::sequence;
 using namespace genesis::utils;
 
-bool contains(std::vector<std::string> const& vec, std::string const& s) {
-    return std::find(std::begin(vec), std::end(vec), s) != std::end(vec);
+bool contains( std::vector< std::string > const& vec, std::string const& s )
+{
+  return std::find( std::begin( vec ), std::end( vec ), s ) != std::end( vec );
 }
 
 int main( int argc, char** argv )
 {
 
-    std::vector<std::string> const sequence_types = {"fasta", "phylip", "interleaved_phylip"};
+  std::vector< std::string > const sequence_types = { "fasta", "phylip", "interleaved_phylip" };
 
-    // Check if the command line contains the right number of arguments.
-    if (argc != 4) {
-        throw std::runtime_error(
-            std::string( "Usage: " ) + argv[0] + " <in type> <out type> <file>"
-        );
+  // Check if the command line contains the right number of arguments.
+  if( argc != 4 ) {
+    throw std::runtime_error(
+        std::string( "Usage: " ) + argv[ 0 ] + " <in type> <out type> <file>" );
+  }
+
+  // Get command line stuff.
+  auto in_type  = to_lower( std::string( argv[ 1 ] ) );
+  auto out_type = to_lower( std::string( argv[ 2 ] ) );
+  auto in_file  = std::string( argv[ 3 ] );
+
+  // sequence files
+  if( contains( sequence_types, in_type ) ) {
+    SequenceSet set;
+    if( in_type == "fasta" ) {
+      FastaReader()
+          .read( from_file( in_file ), set );
+    } else if( in_type == "phylip" ) {
+      PhylipReader()
+          .read( from_file( in_file ), set );
+    } else if( in_type == "interleaved_phylip" ) {
+      PhylipReader().mode( PhylipReader::Mode::kInterleaved ).read( from_file( in_file ), set );
     }
 
-    // Get command line stuff.
-    auto in_type = to_lower(std::string( argv[1] ));
-    auto out_type = to_lower(std::string( argv[2] ));
-    auto in_file = std::string( argv[3] );
-
-    // sequence files
-    if ( contains( sequence_types, in_type ) ) {
-        SequenceSet set;
-        if ( in_type == "fasta" ) {
-            FastaReader()
-                .read( from_file( in_file ), set );
-        } else if ( in_type == "phylip" ) {
-            PhylipReader()
-                .read( from_file( in_file ), set );
-        } else if ( in_type == "interleaved_phylip" ) {
-            PhylipReader().mode(PhylipReader::Mode::kInterleaved)
-                .read( from_file( in_file ), set );
-        }
-
-        if ( out_type == "fasta") {
-            FastaWriter().to_stream( set, std::cout );
-        } else if ( out_type == "phylip") {
-            PhylipWriter().line_length(0).to_stream( set, std::cout );
-        } else if ( out_type == "interleaved_phylip") {
-            //PhylipWriter().mode()
-            //    .to_stream( set, std::cout );
-        } else {
-            throw std::runtime_error{std::string("output type not supported: '") + out_type + "'"};
-        }
-
+    if( out_type == "fasta" ) {
+      FastaWriter().to_stream( set, std::cout );
+    } else if( out_type == "phylip" ) {
+      PhylipWriter().line_length( 0 ).to_stream( set, std::cout );
+    } else if( out_type == "interleaved_phylip" ) {
+      //PhylipWriter().mode()
+      //    .to_stream( set, std::cout );
     } else {
-        throw std::runtime_error{std::string("input type not supported: '") + in_type + "'"};
+      throw std::runtime_error{ std::string( "output type not supported: '" ) + out_type + "'" };
     }
 
+  } else {
+    throw std::runtime_error{ std::string( "input type not supported: '" ) + in_type + "'" };
+  }
 
-    // if ( contains( tree_types, in_type ) ) {
-    //     SequenceSet set;
-    //     if ( in_type == "fasta" ) {
-    //         FastaReader().from_file( in_file, set );
-    //     } else if ( in_type == "phylip" ) {
-    //         PhylipReader().mode(genesis::sequence::PhylipReader::Mode::kAutomatic).from_file( in_file, set );
-    //     }
+  // if ( contains( tree_types, in_type ) ) {
+  //     SequenceSet set;
+  //     if ( in_type == "fasta" ) {
+  //         FastaReader().from_file( in_file, set );
+  //     } else if ( in_type == "phylip" ) {
+  //         PhylipReader().mode(genesis::sequence::PhylipReader::Mode::kAutomatic).from_file( in_file, set );
+  //     }
 
-    //     if ( out_type == "fasta") {
-    //         FastaWriter().to_stream( set, std::cout );
-    //     } else if ( out_type == "phylip") {
-    //         PhylipWriter().to_stream( set, std::cout );
-    //     }
+  //     if ( out_type == "fasta") {
+  //         FastaWriter().to_stream( set, std::cout );
+  //     } else if ( out_type == "phylip") {
+  //         PhylipWriter().to_stream( set, std::cout );
+  //     }
 
-    // }
+  // }
 
-
-    return 0;
+  return 0;
 }

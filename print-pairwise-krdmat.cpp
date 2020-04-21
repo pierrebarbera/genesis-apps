@@ -22,25 +22,26 @@
 
 #include "genesis/genesis.hpp"
 
+#include <algorithm>
 #include <fstream>
 #include <string>
-#include <algorithm>
 
 using namespace genesis;
 using namespace genesis::placement;
 using namespace genesis::tree;
 using namespace genesis::utils;
 
-void normalize(Sample& sample) {
-    auto const total = total_multiplicity(sample);
+void normalize( Sample& sample )
+{
+  auto const total = total_multiplicity( sample );
 
-    std::for_each(  std::begin(sample),
-                    std::end(sample),
-                    [total](Pquery& pq){
-                        for (auto& name : pq.names()) {
-                            name.multiplicity /= total;
-                        }
-                    });
+  std::for_each( std::begin( sample ),
+                 std::end( sample ),
+                 [total]( Pquery& pq ) {
+                   for( auto& name : pq.names() ) {
+                     name.multiplicity /= total;
+                   }
+                 } );
 }
 
 /**
@@ -48,33 +49,32 @@ void normalize(Sample& sample) {
  */
 int main( int argc, char** argv )
 {
-    if ( argc < 2 ) {
-        throw std::runtime_error(
-            std::string("Usage: ") + argv[0] +  " <jplace-files...>"
-        );
-    }
+  if( argc < 2 ) {
+    throw std::runtime_error(
+        std::string( "Usage: " ) + argv[ 0 ] + " <jplace-files...>" );
+  }
 
-    // In out dirs.
-    std::vector<std::string> jplace_paths;
-    for (int i = 1; i < argc; ++i) {
-        jplace_paths.push_back( std::string( argv[i] ) );
-    }
+  // In out dirs.
+  std::vector< std::string > jplace_paths;
+  for( int i = 1; i < argc; ++i ) {
+    jplace_paths.push_back( std::string( argv[ i ] ) );
+  }
 
-    JplaceReader jplace_reader;
-    auto sample_set = jplace_reader.read( from_files( jplace_paths ) );
+  JplaceReader jplace_reader;
+  auto sample_set = jplace_reader.read( from_files( jplace_paths ) );
 
-    for (auto& sample : sample_set) {
-        normalize(sample);
-    }
+  for( auto& sample : sample_set ) {
+    normalize( sample );
+  }
 
-    auto const pwdmat = earth_movers_distance(sample_set);
+  auto const pwdmat = earth_movers_distance( sample_set );
 
-    std::vector<std::string> names;
-    for ( auto const& name : sample_set.names() ) {
-        names.push_back( name );
-    }
+  std::vector< std::string > names;
+  for( auto const& name : sample_set.names() ) {
+    names.push_back( name );
+  }
 
-    MatrixWriter<double>().to_stream( pwdmat, std::cout, {}, names );
+  MatrixWriter< double >().to_stream( pwdmat, std::cout, {}, names );
 
-    return 0;
+  return 0;
 }

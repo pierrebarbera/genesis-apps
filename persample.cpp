@@ -22,9 +22,9 @@
 
 #include "genesis/genesis.hpp"
 
+#include <algorithm>
 #include <fstream>
 #include <string>
-#include <algorithm>
 
 using namespace genesis;
 using namespace genesis::placement;
@@ -36,90 +36,88 @@ using namespace genesis::utils;
  */
 int main( int argc, char** argv )
 {
-    // Activate logging.
-    utils::Logging::log_to_stdout();
-    utils::Logging::details.time = true;
+  // Activate logging.
+  utils::Logging::log_to_stdout();
+  utils::Logging::details.time = true;
 
-    LOG_INFO << "Started";
+  LOG_INFO << "Started";
 
-    // Check if the command line contains the right number of arguments.
-    if (argc != 4) {
-        throw std::runtime_error(
-            std::string("Usage: ") + argv[0] + " <jplace-file> <otu-table> <out-path>\n"
+  // Check if the command line contains the right number of arguments.
+  if( argc != 4 ) {
+    throw std::runtime_error(
+        std::string( "Usage: " ) + argv[ 0 ] + " <jplace-file> <otu-table> <out-path>\n" );
+  }
+
+  // In out dirs.
+  auto jplacefile = std::string( argv[ 1 ] );
+  auto otufile    = std::string( argv[ 2 ] );
+  auto outdir     = utils::dir_normalize_path( std::string( argv[ 3 ] ) );
+  utils::dir_create( outdir );
+
+  // -------------------------------------------------------------------------
+  //     demangle jplace file based on OTU table
+  // -------------------------------------------------------------------------
+  JplaceReader jplace_reader;
+  auto in_sample = jplace_reader.read( from_file( jplacefile ) );
+
+  LOG_INFO << "Finished reading input jplace file: " << jplacefile;
+
+  CsvReader csvreader;
+
+  csvreader.separator_chars( "\t" );
+  csvreader.comment_chars( "#" );
+
+  auto table = csvreader.read( from_file( otufile ) );
+
+  LOG_INFO << "Finished reading OTU table: " << otufile;
+
+  auto& headers = table[ 0 ];
+  LOG_INFO << "Splitting into " << headers.size() - 1 << " separate sample files.";
+
+  auto writer = JplaceWriter();
+  // iterate over the OTU table, column major
+  for( size_t col = 1; col < table[ 0 ].size() - 1; ++col ) {
+    // create an output sample
+    auto sample_id = headers[ col ];
+    Sample out_sample( in_sample.tree() );
+
+    LOG_DBG << "Sample: " << sample_id;
+
+    for( size_t row = 1; row < table.size(); ++row ) {
+      // get the OTU-id
+      auto otu_id       = table[ row ][ 0 ];
+      auto multiplicity = std::stod( table[ row ][ col ] );
+
+      // only write if the otu was in the sample to begin with
+      if( multiplicity > 0 ) {
+        // look up the relevant PQuery
+        auto it = std::find_if( std::begin( in_sample ), std::end( in_sample ),
+                                [otu_id]( const Pquery& pq ) {
+                                  bool ret = false;
+                                  for( auto& name : pq.names() ) {
+                                    if( otu_id == name ) {
+                                      ret = true;
+                                    }
+                                  }
+                                  return ret;
+                                }
+
         );
-    }
 
-    // In out dirs.
-    auto jplacefile = std::string( argv[1] );
-    auto otufile = std::string( argv[2] );
-    auto outdir = utils::dir_normalize_path( std::string( argv[3] ) );
-    utils::dir_create(outdir);
-
-    // -------------------------------------------------------------------------
-    //     demangle jplace file based on OTU table
-    // -------------------------------------------------------------------------
-    JplaceReader jplace_reader;
-    auto in_sample = jplace_reader.read( from_file( jplacefile ) );
-
-    LOG_INFO << "Finished reading input jplace file: " << jplacefile;
-
-    CsvReader csvreader;
-
-    csvreader.separator_chars("\t");
-    csvreader.comment_chars("#");
-
-    auto table = csvreader.read( from_file( otufile ) );
-
-    LOG_INFO << "Finished reading OTU table: " << otufile;
-
-
-    auto& headers = table[0];
-    LOG_INFO << "Splitting into " << headers.size() - 1 << " separate sample files.";
-
-    auto writer = JplaceWriter();
-    // iterate over the OTU table, column major
-    for (size_t col = 1; col < table[0].size() - 1; ++col) {
-        // create an output sample
-        auto sample_id = headers[col];
-        Sample out_sample( in_sample.tree() );
-
-        LOG_DBG << "Sample: " << sample_id ;
-
-        for (size_t row = 1; row < table.size(); ++row) {
-            // get the OTU-id
-            auto otu_id         = table[row][0];
-            auto multiplicity   = std::stod( table[row][col] );
-
-            // only write if the otu was in the sample to begin with
-            if ( multiplicity > 0 ) {
-                // look up the relevant PQuery
-                auto it = std::find_if( std::begin(in_sample), std::end(in_sample),
-                    [otu_id]( const Pquery& pq ) {
-                        bool ret = false;
-                        for ( auto& name : pq.names() ) {
-                            if ( otu_id == name ) {
-                                ret = true;
-                            }
-                        }
-                        return ret;
-                    }
-
-                );
-
-                if ( it != std::end(in_sample) ) {
-                    // add pquery to output sample including multiplicity count
-                    auto& pq = out_sample.add( *it );
-                    // we need to manually set name and multiplicity such that other names/multiplicities
-                    // don't get copied over from the input sample
-                    pq.clear_names();
-                    pq.add_name( otu_id, multiplicity );
-                }
-            }
+        if( it != std::end( in_sample ) ) {
+          // add pquery to output sample including multiplicity count
+          auto& pq = out_sample.add( *it );
+          // we need to manually set name and multiplicity such that other names/multiplicities
+          // don't get copied over from the input sample
+          pq.clear_names();
+          pq.add_name( otu_id, multiplicity );
         }
-
-        writer.to_file( out_sample, outdir + sample_id + ".jplace" );
+      }
     }
 
-    LOG_INFO << "Finished";
-    return 0;
+    writer.to_file( out_sample, outdir + sample_id + ".jplace" );
+  }
+
+  LOG_INFO << "Finished";
+  return 0;
 }

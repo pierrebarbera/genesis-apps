@@ -22,8 +22,8 @@
 
 #include "genesis/genesis.hpp"
 
-#include <string>
 #include <algorithm>
+#include <string>
 
 using namespace genesis;
 using namespace genesis::placement;
@@ -31,66 +31,71 @@ using namespace genesis::tree;
 using namespace genesis::utils;
 
 struct CoreEntry {
-    CoreEntry(double i, double fract) : incidence(i), significance(1, fract) {};
-    double incidence;
-    std::vector<double> significance;
+  CoreEntry( double i, double fract )
+      : incidence( i )
+      , significance( 1, fract ){};
+  double incidence;
+  std::vector< double > significance;
 };
 
-using Core = std::unordered_map<std::string, CoreEntry>;
+using Core = std::unordered_map< std::string, CoreEntry >;
 
-void parse(Core& lhs, CsvReader::Table& rhs, double const fract_thresh = 0.01) {
-    bool first = true;
-    for (auto& row : rhs) {
-        // skip header
-        if (first) {
-            first=false;
-            continue;
-        }
-        auto& taxopath = row.at(4);
-        double fract = atof( row.at(1).c_str() );
-
-        // filter by fract
-        if (fract < fract_thresh) {
-            continue;
-        }
-
-        auto it = lhs.find( taxopath );
-
-        if ( it == lhs.end() ) {
-            lhs.emplace(taxopath, CoreEntry(1.0, fract) );
-        } else {
-            it->second.incidence += 1.0;
-            it->second.significance.emplace_back( fract );
-        }
+void parse( Core& lhs, CsvReader::Table& rhs, double const fract_thresh = 0.01 )
+{
+  bool first = true;
+  for( auto& row : rhs ) {
+    // skip header
+    if( first ) {
+      first = false;
+      continue;
     }
+    auto& taxopath = row.at( 4 );
+    double fract   = atof( row.at( 1 ).c_str() );
+
+    // filter by fract
+    if( fract < fract_thresh ) {
+      continue;
+    }
+
+    auto it = lhs.find( taxopath );
+
+    if( it == lhs.end() ) {
+      lhs.emplace( taxopath, CoreEntry( 1.0, fract ) );
+    } else {
+      it->second.incidence += 1.0;
+      it->second.significance.emplace_back( fract );
+    }
+  }
 }
 
-void to_percent_and_filter( Core& core, size_t const total, double const thresh ) {
-    std::vector<std::string> erase_keys;
-    for (auto i = core.begin(); i != core.end(); ++i) {
-        i->second.incidence /= static_cast<double>(total);
-        if (i->second.incidence < thresh) {
-            erase_keys.emplace_back( i->first );
-        }
+void to_percent_and_filter( Core& core, size_t const total, double const thresh )
+{
+  std::vector< std::string > erase_keys;
+  for( auto i = core.begin(); i != core.end(); ++i ) {
+    i->second.incidence /= static_cast< double >( total );
+    if( i->second.incidence < thresh ) {
+      erase_keys.emplace_back( i->first );
     }
+  }
 
-    // erasure phase
-    for (auto& key : erase_keys) {
-        core.erase( key );
-    }
+  // erasure phase
+  for( auto& key : erase_keys ) {
+    core.erase( key );
+  }
 }
 
-void to_stream(Core& core, std::ostream& stream) {
-    stream << "taxopath\tincidence\tsignificance\n";
-    for (auto i = core.begin(); i != core.end(); ++i) {
-        stream << i->first << "\t";
-        stream << i->second.incidence << "\t";
+void to_stream( Core& core, std::ostream& stream )
+{
+  stream << "taxopath\tincidence\tsignificance\n";
+  for( auto i = core.begin(); i != core.end(); ++i ) {
+    stream << i->first << "\t";
+    stream << i->second.incidence << "\t";
 
-        auto& sigvec = i->second.significance;
-        double total = std::accumulate(sigvec.begin(), sigvec.end(), 0.0);
-        double avg_sig = total / (double)sigvec.size();
-        stream << avg_sig << "\n";
-    }
+    auto& sigvec   = i->second.significance;
+    double total   = std::accumulate( sigvec.begin(), sigvec.end(), 0.0 );
+    double avg_sig = total / (double)sigvec.size();
+    stream << avg_sig << "\n";
+  }
 }
 
 /**
@@ -98,39 +103,38 @@ void to_stream(Core& core, std::ostream& stream) {
  */
 int main( int argc, char** argv )
 {
-    // Check if the command line contains the right number of arguments.
-    if ( argc < 4 ) {
-        throw std::runtime_error(
-            "Usage: core-microbiome <inclusion-threshold> <fract-threshold> <jplace-files...>\n"
-            "Where inclusion threshold is the percentage [1.0,0.0) of samples a taxon has to appear in to be included\n"
-            "and fract threshold is the percentage (1.0,0.0] below which a taxopath is ignored\n"
-        );
-    }
+  // Check if the command line contains the right number of arguments.
+  if( argc < 4 ) {
+    throw std::runtime_error(
+        "Usage: core-microbiome <inclusion-threshold> <fract-threshold> <jplace-files...>\n"
+        "Where inclusion threshold is the percentage [1.0,0.0) of samples a taxon has to appear in to be included\n"
+        "and fract threshold is the percentage (1.0,0.0] below which a taxopath is ignored\n" );
+  }
 
-    // In out dirs.
-    std::vector<std::string> profile_files;
-    for (int i = 3; i < argc; ++i) {
-        profile_files.push_back( std::string( argv[i] ) );
-    }
-    auto thresh = std::stod( argv[1] );
-    auto fract_thresh = std::stod( argv[2] );
+  // In out dirs.
+  std::vector< std::string > profile_files;
+  for( int i = 3; i < argc; ++i ) {
+    profile_files.push_back( std::string( argv[ i ] ) );
+  }
+  auto thresh       = std::stod( argv[ 1 ] );
+  auto fract_thresh = std::stod( argv[ 2 ] );
 
-    // read in the profiles
-    CsvReader reader;
-    reader.separator_chars("\t");
-    std::vector<CsvReader::Table> profiles;
-    for (auto const& p : profile_files) {
-        profiles.emplace_back( reader.read( from_file( p ) ) );
-    }
+  // read in the profiles
+  CsvReader reader;
+  reader.separator_chars( "\t" );
+  std::vector< CsvReader::Table > profiles;
+  for( auto const& p : profile_files ) {
+    profiles.emplace_back( reader.read( from_file( p ) ) );
+  }
 
-    Core result;
-    for (auto& profile : profiles) {
-        parse(result, profile, fract_thresh);
-    }
+  Core result;
+  for( auto& profile : profiles ) {
+    parse( result, profile, fract_thresh );
+  }
 
-    to_percent_and_filter( result, profiles.size(), thresh );
+  to_percent_and_filter( result, profiles.size(), thresh );
 
-    to_stream( result, std::cout );
+  to_stream( result, std::cout );
 
-    return 0;
+  return 0;
 }

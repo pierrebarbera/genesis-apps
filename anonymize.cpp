@@ -31,41 +31,40 @@ using namespace genesis::utils;
 
 int main( int argc, char** argv )
 {
-    // Check if the command line contains the right number of arguments.
-    if (argc != 3) {
-        throw std::runtime_error(
-            std::string( "Usage: " ) + argv[0] + " <type> <file>"
-        );
+  // Check if the command line contains the right number of arguments.
+  if( argc != 3 ) {
+    throw std::runtime_error(
+        std::string( "Usage: " ) + argv[ 0 ] + " <type> <file>" );
+  }
+
+  std::string filetype( argv[ 1 ] );
+  std::string filename( argv[ 2 ] );
+
+  if( to_lower( filetype ) == "fasta" ) {
+    // Prepare reading and writing files.
+    SequenceSet set;
+
+    // Get labels of reference alignment.
+    FastaReader().read( from_file( filename ), set );
+
+    for( auto& seq : set ) {
+      seq.label( SHA1().read_hex( from_string( seq.label() ) ) );
     }
 
-    std::string filetype(argv[1]);
-    std::string filename(argv[2]);
+    FastaWriter().to_stream( set, std::cout );
+  } else if( to_lower( filetype ) == "newick" ) {
+    // Get labels of reference alignment.
+    auto tree = CommonTreeNewickReader().read( from_file( filename ) );
 
-    if (to_lower(filetype) == "fasta") {
-        // Prepare reading and writing files.
-        SequenceSet set;
+    auto leaf_ids = leaf_node_indices( tree );
 
-        // Get labels of reference alignment.
-        FastaReader().read( from_file(filename) , set );
-
-        for (auto& seq : set) {
-            seq.label( SHA1().read_hex( from_string( seq.label() ) ) );
-        }
-
-        FastaWriter().to_stream(set, std::cout);
-    } else if (to_lower(filetype) == "newick") {
-        // Get labels of reference alignment.
-        auto tree = CommonTreeNewickReader().read( from_file( filename ) );
-
-        auto leaf_ids = leaf_node_indices( tree );
-
-        for (auto id : leaf_ids) {
-            auto& name = tree.node_at( id ).data<CommonNodeData>().name;
-            name = SHA1().read_hex( from_string( name ) );
-        }
-
-        CommonTreeNewickWriter().to_stream(tree, std::cout);
+    for( auto id : leaf_ids ) {
+      auto& name = tree.node_at( id ).data< CommonNodeData >().name;
+      name       = SHA1().read_hex( from_string( name ) );
     }
 
-    return 0;
+    CommonTreeNewickWriter().to_stream( tree, std::cout );
+  }
+
+  return 0;
 }

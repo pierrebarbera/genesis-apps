@@ -32,31 +32,29 @@ using namespace genesis::utils;
 
 int main( int argc, char** argv )
 {
-    // Check if the command line contains the right number of arguments.
-    if (argc != 3) {
-        throw std::runtime_error(
-            std::string( "Usage: " ) + argv[0]  + " <fasta_msa> <number of sequences>"
-        );
-    }
+  // Check if the command line contains the right number of arguments.
+  if( argc != 3 ) {
+    throw std::runtime_error(
+        std::string( "Usage: " ) + argv[ 0 ] + " <fasta_msa> <number of sequences>" );
+  }
 
-    // Prepare reading and writing files.
-    auto reader = FastaReader();
-    auto writer = FastaWriter();
-    auto in_set = SequenceSet();
-    auto out_set = SequenceSet();
+  // Prepare reading and writing files.
+  auto reader  = FastaReader();
+  auto writer  = FastaWriter();
+  auto in_set  = SequenceSet();
+  auto out_set = SequenceSet();
 
-    // Get labels of reference alignment.
-    reader.read( from_file( argv[1] ), in_set );
+  // Get labels of reference alignment.
+  reader.read( from_file( argv[ 1 ] ), in_set );
 
-    const auto max = std::min((size_t)std::stoi(argv[2]), in_set.size());
-    const auto skip = in_set.size() - max;
+  const auto max  = std::min( (size_t)std::stoi( argv[ 2 ] ), in_set.size() );
+  const auto skip = in_set.size() - max;
 
-    for (size_t i = skip; i < in_set.size(); ++i)
-    {
-        out_set.add(in_set[i]);
-    }
+  for( size_t i = skip; i < in_set.size(); ++i ) {
+    out_set.add( in_set[ i ] );
+  }
 
-    writer.to_stream(out_set, std::cout);
+  writer.to_stream( out_set, std::cout );
 
-    return 0;
+  return 0;
 }

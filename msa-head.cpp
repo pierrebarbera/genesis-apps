@@ -29,21 +29,21 @@ using namespace genesis::utils;
 
 int main( int argc, char** argv )
 {
-    // Check if the command line contains the right number of arguments.
-    if (argc != 3) {
-        LOG_INFO << "Usage: " << argv[0] << " <fasta_msa> <number of sequences>";
-        return 1;
-    }
+  // Check if the command line contains the right number of arguments.
+  if( argc != 3 ) {
+    LOG_INFO << "Usage: " << argv[ 0 ] << " <fasta_msa> <number of sequences>";
+    return 1;
+  }
 
-    auto seq_file  = std::string( argv[1] );
-    const size_t num = std::stoi(argv[2]);
-    auto writer = FastaWriter();
+  auto seq_file    = std::string( argv[ 1 ] );
+  const size_t num = std::stoi( argv[ 2 ] );
+  auto writer      = FastaWriter();
 
-    auto iter = FastaInputIterator( from_file(seq_file) );
-    for (size_t i = 0; iter and (i < num); ++i) {
-        writer.write_sequence(*iter, std::cout);
-        iter.increment();
-    }
+  auto iter = FastaInputIterator( from_file( seq_file ) );
+  for( size_t i = 0; iter and ( i < num ); ++i ) {
+    writer.write_sequence( *iter, std::cout );
+    iter.increment();
+  }
 
-    return 0;
+  return 0;
 }
