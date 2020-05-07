@@ -48,21 +48,38 @@ int main( int argc, char** argv )
   for( int i = 1; i < argc; ++i ) {
     std::string const msa_file = argv[ i ];
     // Get labels of reference alignment.
-    auto set = read_any_seqfile( msa_file );
+    auto set   = read_any_seqfile( msa_file );
     bool valid = true;
     LOG_INFO << "File: " << msa_file;
 
-    auto sites = set[ 0 ].size();
+    auto const& first_seq = set[ 0 ];
+
+    auto sites = first_seq.size();
     LOG_INFO << "Sites: " << sites;
+
+    // bitvector indicating for each site wether there was more than one type of nucleotide
+    Bitvector site_is_variable( sites );
+
     size_t n = 0;
     for( auto& s : set ) {
+      n++;
       if( s.size() != sites ) {
         LOG_ERR << "Incorrect number of sites for sequence " << n;
         LOG_ERR << sites << " vs " << s.size();
         valid = false;
+        continue;
       }
-      n++;
+
+      // check for site variability
+      for( size_t k = 0; k < sites; ++k ) {
+        if( s[ k ] != first_seq[ k ] ) {
+          site_is_variable.set( k );
+        }
+      }
     }
+
+    LOG_INFO << "Variable Sites: " << site_is_variable.count();
+
     LOG_INFO << "Sequences: " << n;
     if( valid ) {
       LOG_INFO << "File OK!";
