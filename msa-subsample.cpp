@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2018 Pierre Barbera
+    Copyright (C) 2020 Pierre Barbera
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -21,6 +21,8 @@
 */
 
 #include "genesis/genesis.hpp"
+
+#include "common.hpp"
 
 #include <algorithm>
 #include <fstream>
@@ -68,7 +70,7 @@ void remove_duplicates( SequenceSet& set )
   auto new_end = std::remove_if(
       std::begin( set ),
       std::end( set ),
-      [&]( Sequence const& seq ) {
+      [ & ]( Sequence const& seq ) {
         return ( not labels.insert( seq.label() ).second );
       } );
 
@@ -80,17 +82,11 @@ int main( int argc, char** argv )
   // Check if the command line contains the right number of arguments.
   if( argc != 3 ) {
     throw std::runtime_error(
-        std::string( "Usage: " ) + argv[ 0 ] + " <fasta_msa> <number of sequences>" );
+        std::string( "Usage: " ) + argv[ 0 ] + " <msa_file> <number of sequences>" );
   }
 
-  // Prepare reading and writing files.
-  auto reader  = FastaReader();
-  auto writer  = FastaWriter();
-  auto in_set  = SequenceSet();
-  auto out_set = SequenceSet();
-
   // Get labels of reference alignment.
-  reader.read( from_file( argv[ 1 ] ), in_set );
+  auto in_set = read_any_seqfile( argv[ 1 ] );
 
   remove_duplicates( in_set );
 
@@ -99,11 +95,10 @@ int main( int argc, char** argv )
   // get random indices
   auto idx = get_rand_unique( num, 0, in_set.size() );
 
+  FastaOutputIterator out { std::cout };
   for( auto i : idx ) {
-    out_set.add( in_set[ i ] );
+    out = in_set[ i ];
   }
-
-  writer.to_stream( out_set, std::cout );
 
   return 0;
 }

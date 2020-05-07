@@ -38,23 +38,16 @@ int main( int argc, char** argv )
         std::string( "Usage: " ) + argv[ 0 ] + " <fasta_msa> <number of sequences>" );
   }
 
-  // Prepare reading and writing files.
-  auto reader  = FastaReader();
-  auto writer  = FastaWriter();
-  auto in_set  = SequenceSet();
-  auto out_set = SequenceSet();
-
-  // Get labels of reference alignment.
-  reader.read( from_file( argv[ 1 ] ), in_set );
+  SequenceSet in_set;
+  FastaReader().read( from_file( argv[ 1 ] ), in_set );
 
   const auto max  = std::min( (size_t)std::stoi( argv[ 2 ] ), in_set.size() );
   const auto skip = in_set.size() - max;
 
+  FastaOutputIterator out { std::cout };
   for( size_t i = skip; i < in_set.size(); ++i ) {
-    out_set.add( in_set[ i ] );
+    out = in_set[ i ];
   }
-
-  writer.to_stream( out_set, std::cout );
 
   return 0;
 }

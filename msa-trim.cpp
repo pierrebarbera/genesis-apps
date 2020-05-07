@@ -45,7 +45,7 @@ int main( int argc, char** argv )
     throw std::runtime_error( "Both trim values must be >= 0!" );
   }
 
-  auto const total_trimmed = trim_left + trim_right;
+  size_t const total_trimmed = trim_left + trim_right;
 
   auto fasta_in = FastaInputIterator( from_file( infile ) );
   FastaOutputIterator fasta_out { std::cout };

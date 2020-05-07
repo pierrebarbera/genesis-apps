@@ -69,8 +69,7 @@ int main( int argc, char** argv )
     } else if( out_type == "phylip" ) {
       PhylipWriter().line_length( 0 ).to_stream( set, std::cout );
     } else if( out_type == "interleaved_phylip" ) {
-      //PhylipWriter().mode()
-      //    .to_stream( set, std::cout );
+      throw std::runtime_error{ std::string( "output type not supported: '" ) + out_type + "'" };
     } else {
       throw std::runtime_error{ std::string( "output type not supported: '" ) + out_type + "'" };
     }
@@ -78,22 +77,6 @@ int main( int argc, char** argv )
   } else {
     throw std::runtime_error{ std::string( "input type not supported: '" ) + in_type + "'" };
   }
-
-  // if ( contains( tree_types, in_type ) ) {
-  //     SequenceSet set;
-  //     if ( in_type == "fasta" ) {
-  //         FastaReader().from_file( in_file, set );
-  //     } else if ( in_type == "phylip" ) {
-  //         PhylipReader().mode(genesis::sequence::PhylipReader::Mode::kAutomatic).from_file( in_file, set );
-  //     }
-
-  //     if ( out_type == "fasta") {
-  //         FastaWriter().to_stream( set, std::cout );
-  //     } else if ( out_type == "phylip") {
-  //         PhylipWriter().to_stream( set, std::cout );
-  //     }
-
-  // }
 
   return 0;
 }
