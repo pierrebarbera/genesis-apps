@@ -36,28 +36,40 @@ using namespace genesis::utils;
 constexpr char VAR_ONCE = '1';
 constexpr char VAR_MANY = '2';
 
-struct counts {
-  size_t variable  = 0;
-  size_t singleton = 0;
-  size_t constant  = 0;
+struct counts_t {
+  size_t variable    = 0;
+  size_t pars_inform = 0;
+  size_t singleton   = 0;
+  size_t constant    = 0;
 };
 
-counts eval_sites( std::string const& sites )
+counts_t eval_sites( SiteCounts const& counts )
 {
-  counts ret;
+  counts_t ret;
 
-  for(auto const& s : sites){
-    switch(s) {
-      case VAR_ONCE:
+  auto const sites     = counts.length();
+  auto const num_chars = counts.characters().size();
+
+  for( size_t site_idx = 0; site_idx < sites; ++site_idx ) {
+    size_t num_nonzero_chars = 0;
+    size_t num_two_or_more   = 0;
+    for( size_t char_idx = 0; char_idx < num_chars; ++char_idx ) {
+      auto const c = counts.count_at( char_idx, site_idx );
+      num_nonzero_chars += static_cast< bool >( c );
+      num_two_or_more += ( c > 1 );
+    }
+
+    if( num_nonzero_chars > 1 ) {
+      ret.variable++;
+      if( num_two_or_more > 1 ) {
+        ret.pars_inform++;
+      } else if( num_two_or_more == 1 ) {
         ret.singleton++;
-        __attribute__ ((fallthrough));
-      case VAR_MANY:
-        ret.variable++;
-        break;
+      }
+    } else {
+      ret.constant++;
     }
   }
-
-  ret.constant = sites.size() - ret.variable;
 
   return ret;
 }
@@ -87,9 +99,7 @@ int main( int argc, char** argv )
 
     auto sites = first_seq.size();
 
-    // make an editable sequence where we set the sites to special chars if it is variable
-
-    std::string check_sites = first_seq.sites();
+    SiteCounts site_counts( nucleic_acid_codes_all(), sites );
 
     size_t n = 0;
     for( auto& s : set ) {
@@ -104,23 +114,24 @@ int main( int argc, char** argv )
       }
 
       // check for site variability
-      for( size_t k = 0; valid and k < sites; ++k ) {
-        auto& check_site = check_sites[ k ];
-        if( s[ k ] != check_site ) {
-          check_site = ( check_site == VAR_ONCE ) ? VAR_MANY : VAR_ONCE;
-        }
-      }
+      site_counts.add_sequence( s, false );
     }
 
-    auto count = eval_sites( check_sites );
+    auto count = eval_sites( site_counts );
 
     LOG_INFO << n << " sequences";
 
     LOG_INFO << sites << " sites";
-    LOG_INFO << "\t" << count.variable << "\t" << "variable";
-    LOG_INFO << "\t" << count.singleton << "\t" << "singleton";
-    LOG_INFO << "\t" << count.constant << "\t" << "constant";
-    LOG_INFO << "\t" << gap_sites( set ).count() << "\t" << "gap";
+    LOG_INFO << "\t" << count.variable << "\t"
+             << "variable";
+    LOG_INFO << "\t" << count.pars_inform << "\t"
+             << "parsimony-informative";
+    LOG_INFO << "\t" << count.singleton << "\t"
+             << "singleton";
+    LOG_INFO << "\t" << count.constant << "\t"
+             << "constant";
+    LOG_INFO << "\t" << gap_sites( set ).count() << "\t"
+             << "gap";
 
     if( valid ) {
       LOG_INFO << "File OK!";
