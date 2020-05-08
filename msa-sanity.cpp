@@ -33,6 +33,35 @@ using namespace genesis;
 using namespace genesis::sequence;
 using namespace genesis::utils;
 
+constexpr char VAR_ONCE = '1';
+constexpr char VAR_MANY = '2';
+
+struct counts {
+  size_t variable  = 0;
+  size_t singleton = 0;
+  size_t constant  = 0;
+};
+
+counts eval_sites( std::string const& sites )
+{
+  counts ret;
+
+  for(auto const& s : sites){
+    switch(s) {
+      case VAR_ONCE:
+        ret.singleton++;
+        __attribute__ ((fallthrough));
+      case VAR_MANY:
+        ret.variable++;
+        break;
+    }
+  }
+
+  ret.constant = sites.size() - ret.variable;
+
+  return ret;
+}
+
 int main( int argc, char** argv )
 {
   // Activate logging.
@@ -50,18 +79,22 @@ int main( int argc, char** argv )
     // Get labels of reference alignment.
     auto set   = read_any_seqfile( msa_file );
     bool valid = true;
+    LOG_INFO << " ======================= ";
     LOG_INFO << "File: " << msa_file;
 
+    normalize_nucleic_acid_codes( set[ 0 ] );
     auto const& first_seq = set[ 0 ];
 
     auto sites = first_seq.size();
-    LOG_INFO << "Sites: " << sites;
 
-    // bitvector indicating for each site wether there was more than one type of nucleotide
-    Bitvector site_is_variable( sites );
+    // make an editable sequence where we set the sites to special chars if it is variable
+
+    std::string check_sites = first_seq.sites();
 
     size_t n = 0;
     for( auto& s : set ) {
+      // make sure the seqs all look the same
+      normalize_nucleic_acid_codes( s );
       n++;
       if( s.size() != sites ) {
         LOG_ERR << "Incorrect number of sites for sequence " << n;
@@ -71,16 +104,24 @@ int main( int argc, char** argv )
       }
 
       // check for site variability
-      for( size_t k = 0; k < sites; ++k ) {
-        if( s[ k ] != first_seq[ k ] ) {
-          site_is_variable.set( k );
+      for( size_t k = 0; valid and k < sites; ++k ) {
+        auto& check_site = check_sites[ k ];
+        if( s[ k ] != check_site ) {
+          check_site = ( check_site == VAR_ONCE ) ? VAR_MANY : VAR_ONCE;
         }
       }
     }
 
-    LOG_INFO << "Variable Sites: " << site_is_variable.count();
+    auto count = eval_sites( check_sites );
 
-    LOG_INFO << "Sequences: " << n;
+    LOG_INFO << n << " sequences";
+
+    LOG_INFO << sites << " sites";
+    LOG_INFO << "\t" << count.variable << "\t" << "variable";
+    LOG_INFO << "\t" << count.singleton << "\t" << "singleton";
+    LOG_INFO << "\t" << count.constant << "\t" << "constant";
+    LOG_INFO << "\t" << gap_sites( set ).count() << "\t" << "gap";
+
     if( valid ) {
       LOG_INFO << "File OK!";
     } else {
