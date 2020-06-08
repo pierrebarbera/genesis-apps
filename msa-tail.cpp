@@ -44,9 +44,9 @@ int main( int argc, char** argv )
   const auto max  = std::min( (size_t)std::stoi( argv[ 2 ] ), in_set.size() );
   const auto skip = in_set.size() - max;
 
-  FastaOutputIterator out { std::cout };
+  FastaOutputIterator out { to_stream( std::cout ) };
   for( size_t i = skip; i < in_set.size(); ++i ) {
-    out = in_set[ i ];
+    out << in_set[ i ];
   }
 
   return 0;

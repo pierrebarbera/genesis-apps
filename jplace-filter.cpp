@@ -217,7 +217,7 @@ int main( int argc, char** argv )
 
     auto filtered_name = "filtered_" + filename;
 
-    JplaceWriter().to_file( filtered_sample, filtered_name );
+    JplaceWriter().write( filtered_sample, to_file( filtered_name ) );
 
     std::cout << "Done! " << trash_count << " queries removed. Output: " << filtered_name << std::endl;
 

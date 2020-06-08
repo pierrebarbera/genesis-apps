@@ -74,7 +74,7 @@ int main( int argc, char** argv )
     names.push_back( name );
   }
 
-  MatrixWriter< double >().to_stream( pwdmat, std::cout, {}, names );
+  MatrixWriter< double >().write( pwdmat, to_stream( std::cout ), {}, names );
 
   return 0;
 }

@@ -41,7 +41,7 @@ int main( int argc, char** argv )
   auto const prune_label  = std::string( argv[ 2 ] );
 
   auto fasta_in = FastaInputIterator( from_file( infile ) );
-  FastaOutputIterator fasta_out { std::cout };
+  FastaOutputIterator fasta_out { to_stream( std::cout ) };
 
   while( fasta_in ) {
     auto seq = *fasta_in;
@@ -52,7 +52,7 @@ int main( int argc, char** argv )
 
     // only print those seqs that don't equal the label
     if( seq.label().compare( prune_label ) != 0 ) {
-      fasta_out = seq;
+      fasta_out << seq;
     }
 
     ++fasta_in;

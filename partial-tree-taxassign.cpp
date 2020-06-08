@@ -42,7 +42,7 @@ void print_labelled( Tree const& tree,
         element.comments.emplace_back(
             TaxopathGenerator().to_string( node_labels[ node.index() ] ) );
       } );
-  writer.to_stream( tree, std::cout );
+  writer.write( tree, to_stream( std::cout ) );
 }
 
 Taxopath intersect( Taxopath const& lhs, Taxopath const& rhs )

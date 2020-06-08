@@ -150,7 +150,7 @@ int main( int argc, char** argv )
     krd_matrix.at( i, j ) = krd_matrix.at( j, i ) = krd;
   }
 
-  MatrixWriter< double >().to_stream( krd_matrix, std::cout, {}, names );
+  MatrixWriter< double >().write( krd_matrix, to_stream( std::cout ), {}, names );
 
   return 0;
 }

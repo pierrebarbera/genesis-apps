@@ -48,7 +48,7 @@ int main( int argc, char** argv )
   size_t const total_trimmed = trim_left + trim_right;
 
   auto fasta_in = FastaInputIterator( from_file( infile ) );
-  FastaOutputIterator fasta_out { std::cout };
+  FastaOutputIterator fasta_out { to_stream( std::cout ) };
 
   while( fasta_in ) {
     auto seq = *fasta_in;
@@ -66,7 +66,7 @@ int main( int argc, char** argv )
 
     seq.sites( std::string( begin, end ) );
 
-    fasta_out = seq;
+    fasta_out << seq;
 
     ++fasta_in;
   }

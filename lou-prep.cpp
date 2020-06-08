@@ -120,14 +120,14 @@ int main( int argc, char** argv )
     locfile << std::to_string( proximal_length ) + "\n";
 
     // write the tree
-    CommonTreeNewickWriter().to_file( tree, cur_out_dir + "pruned.newick" );
+    CommonTreeNewickWriter().write( tree, to_file(cur_out_dir + "pruned.newick") );
 
     // write the sequence, unaligned, into a phylip file
     SequenceSet seq_set;
     auto& seq = seq_set.add( *find_sequence( msa, leaf_name ) );
     remove_all_gaps( seq );
 
-    PhylipWriter().to_file( seq_set, cur_out_dir + "query.phylip" );
+    PhylipWriter().write( seq_set, to_file(cur_out_dir + "query.phylip") );
 
     // write out ref msa
     SequenceSet ref_set( msa );
@@ -138,7 +138,7 @@ int main( int argc, char** argv )
       }
     }
 
-    PhylipWriter().to_file( ref_set, cur_out_dir + "reference.phylip" );
+    PhylipWriter().write( ref_set, to_file(cur_out_dir + "reference.phylip") );
   }
 
   return 0;

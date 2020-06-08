@@ -95,9 +95,9 @@ int main( int argc, char** argv )
   // get random indices
   auto idx = get_rand_unique( num, 0, in_set.size() );
 
-  FastaOutputIterator out { std::cout };
+  FastaOutputIterator out { to_stream( std::cout ) };
   for( auto i : idx ) {
-    out = in_set[ i ];
+    out << in_set[ i ];
   }
 
   return 0;

@@ -124,7 +124,7 @@ int main( int argc, char** argv )
   JplaceReader jplace_reader;
   auto sample = read_and_merge( jplace_paths );
 
-  JplaceWriter().to_stream( sample, std::cout );
+  JplaceWriter().write( sample, to_stream( std::cout ) );
 
   return 0;
 }

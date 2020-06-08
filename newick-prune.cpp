@@ -69,7 +69,7 @@ int main( int argc, char** argv )
   auto writer = CommonTreeNewickWriter();
   writer.branch_length_precision(15);
 
-  writer.to_stream( tree, std::cout );
+  writer.write( tree, to_stream( std::cout ) );
   std::cout << std::endl;
 
   return 0;

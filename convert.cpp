@@ -65,9 +65,9 @@ int main( int argc, char** argv )
     }
 
     if( out_type == "fasta" ) {
-      FastaWriter().to_stream( set, std::cout );
+      FastaWriter().write( set, to_stream( std::cout ) );
     } else if( out_type == "phylip" ) {
-      PhylipWriter().line_length( 0 ).to_stream( set, std::cout );
+      PhylipWriter().line_length( 0 ).write( set, to_stream( std::cout ) );
     } else if( out_type == "interleaved_phylip" ) {
       throw std::runtime_error{ std::string( "output type not supported: '" ) + out_type + "'" };
     } else {

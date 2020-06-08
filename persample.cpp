@@ -115,7 +115,7 @@ int main( int argc, char** argv )
       }
     }
 
-    writer.to_file( out_sample, outdir + sample_id + ".jplace" );
+    writer.write( out_sample, to_file( outdir + sample_id + ".jplace" ) );
   }
 
   LOG_INFO << "Finished";

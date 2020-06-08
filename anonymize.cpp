@@ -51,7 +51,7 @@ int main( int argc, char** argv )
       seq.label( SHA1().read_hex( from_string( seq.label() ) ) );
     }
 
-    FastaWriter().to_stream( set, std::cout );
+    FastaWriter().write( set, to_stream( std::cout ) );
   } else if( to_lower( filetype ) == "newick" ) {
     // Get labels of reference alignment.
     auto tree = CommonTreeNewickReader().read( from_file( filename ) );
@@ -63,7 +63,7 @@ int main( int argc, char** argv )
       name       = SHA1().read_hex( from_string( name ) );
     }
 
-    CommonTreeNewickWriter().to_stream( tree, std::cout );
+    CommonTreeNewickWriter().write( tree, to_stream( std::cout ) );
   }
 
   return 0;
