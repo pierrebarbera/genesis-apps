@@ -82,7 +82,7 @@ int main( int argc, char** argv )
 
 
   // Check if the command line contains the right number of arguments.
-  if( argc != 4 ) {
+  if( argc != 3 ) {
     throw std::runtime_error(
         std::string( "Usage: " ) + argv[ 0 ] + " <jplace-file> <jplace-file-pruned>" );
   }
