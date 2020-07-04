@@ -86,7 +86,6 @@ int main( int argc, char** argv )
     throw std::runtime_error(
         std::string( "Usage: " ) + argv[ 0 ] + " <jplace-file> <jplace-file-pruned>" );
   }
-  auto outfile = std::string( argv[ 3 ] ) + ".svg";
 
   LOG_INFO << "Started";
   
