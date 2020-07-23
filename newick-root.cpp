@@ -84,20 +84,24 @@ int main( int argc, char** argv )
   std::string tree_file( argv[ 1 ] );
   std::string root_pattern( argv[ 2 ] );
 
-  auto tree = CommonTreeNewickReader().read( from_file( tree_file ) );
+  TreeSet trees;
 
-  // search for the leafs
-  auto nodes = nodes_by_pattern( tree, root_pattern );
-  // get lowest common ancestor edge of all found leafs
-  auto& lca_branch = lowest_common_ancestor( tree, nodes );
-  // root the tree there
-  make_rooted( tree, lca_branch );
+  CommonTreeNewickReader().read( from_file( tree_file ), trees );
 
-  auto writer = CommonTreeNewickWriter();
-  writer.branch_length_precision(15);
+  for( auto& tree : trees ) {
+    // search for the leafs
+    auto nodes = nodes_by_pattern( tree, root_pattern );
+    // get lowest common ancestor edge of all found leafs
+    auto& lca_branch = lowest_common_ancestor( tree, nodes );
+    // root the tree there
+    make_rooted( tree, lca_branch );
 
-  writer.write( tree, to_stream( std::cout ) );
-  // std::cout << std::endl;
+    auto writer = CommonTreeNewickWriter();
+    writer.branch_length_precision(15);
+
+    writer.write( tree, to_stream( std::cout ) );
+    // std::cout << std::endl;
+  }
 
   return 0;
 }
