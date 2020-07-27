@@ -48,7 +48,6 @@ std::vector<TreeNode const*> nodes_by_pattern( Tree const& tree, std::string con
   for( auto const& name : names ) {
     std::smatch match;
     if( std::regex_search(  name, match, reg ) ) {
-      std::cout << match.str() << std::endl;
       root_names.push_back( match.str() );
     }
   }
