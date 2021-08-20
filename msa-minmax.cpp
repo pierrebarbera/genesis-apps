@@ -60,7 +60,7 @@ int main( int argc, char** argv )
 
     // only return sequences that have between min and max nucleotides
     auto len = find_sites( seq, nucleic_acid_codes_all_letters() ).count();
-    if( len >= min_N || len <= max_N ) {
+    if( len >= min_N && len <= max_N ) {
       fasta_out << seq;
     }
 
