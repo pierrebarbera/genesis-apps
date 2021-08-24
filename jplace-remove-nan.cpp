@@ -47,7 +47,7 @@ int main( int argc, char** argv )
   }
 
   std::vector< std::string > jplace_files;
-  for( int i = 2; i < argc; ++i ) {
+  for( int i = 1; i < argc; ++i ) {
     jplace_files.emplace_back( argv[ i ] );
   }
 
