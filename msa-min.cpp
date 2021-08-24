@@ -32,23 +32,21 @@ using namespace genesis::utils;
 int main( int argc, char** argv )
 {
   // Check if the command line contains the right number of arguments.
-  if( argc != 4 ) {
+  if( argc != 3 ) {
     throw std::runtime_error(
-        std::string( "Usage: " ) + argv[ 0 ] + " <fasta_msa> <min-N> <max-N>" );
+        std::string( "Usage: " ) + argv[ 0 ] + " <fasta_msa> <min-N>" );
   }
 
   auto const infile = std::string( argv[ 1 ] );
   auto const min_N  = std::stoi( argv[ 2 ] );
-  auto const max_N  = std::stoi( argv[ 3 ] );
 
   if( min_N < 0 ) {
     throw std::runtime_error("min-N must be positive");
   }
-  if( max_N < 0 ) {
-    throw std::runtime_error("max-N must be positive");
-  }
 
-  auto fasta_in = FastaInputIterator( from_file( infile ) );
+  auto fasta_in = FastaInputIterator(
+    (infile == "--") ? from_stream( std::cin ) : from_file( infile ) );
+
   FastaOutputIterator fasta_out { to_stream( std::cout ) };
 
   while( fasta_in ) {
@@ -58,9 +56,9 @@ int main( int argc, char** argv )
       throw std::runtime_error( "Invalid sequences with empty label or sites." );
     }
 
-    // only return sequences that have between min and max nucleotides
-    auto len = find_sites( seq, nucleic_acid_codes_all_letters() ).count();
-    if( len >= min_N && len <= max_N ) {
+    // only return sequences that have more than max_N nongap chars
+    int len = find_sites( seq, nucleic_acid_codes_all_letters() ).count();
+    if( len >= min_N ) {
       fasta_out << seq;
     }
 
