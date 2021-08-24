@@ -38,15 +38,15 @@ int main( int argc, char** argv )
   // Check if the command line contains the right number of arguments.
   if( argc < 2 or argc > 3 ) {
     throw std::runtime_error(
-        std::string( "Usage: " ) + argv[ 0 ] + " <fasta_msa> [<num-seqs>]" );
+        std::string( "Usage: " ) + argv[ 0 ] + " <fasta_msa> [<first-n>]" );
   }
 
   auto const infile     = std::string( argv[ 1 ] );
   auto const trimchars  = ".";
-  size_t const num_seqs = (argc == 3) ? std::stoi( argv[ 2 ] ) : std::numeric_limits< size_t >::max();
+  size_t const first_n  = (argc == 3) ? std::stoi( argv[ 2 ] ) : std::numeric_limits< size_t >::max();
 
-  if (num_seqs == 0) {
-    throw std::runtime_error("num_seqs of 0 makes no sense");
+  if (first_n == 0) {
+    throw std::runtime_error("first_n of 0 makes no sense");
   }
 
   auto fasta_in = FastaInputIterator(
@@ -62,7 +62,7 @@ int main( int argc, char** argv )
 
   // go through the file and identify columns that correspond to inserts ("." if coming from hmmer)
   size_t cur_seq = 0;
-  while( fasta_in and cur_seq < num_seqs ) {
+  while( fasta_in and cur_seq < first_n ) {
     auto seq = *fasta_in;
 
     if( seq.sites().empty() || seq.label().empty() ) {
