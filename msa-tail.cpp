@@ -33,16 +33,26 @@ using namespace genesis::utils;
 int main( int argc, char** argv )
 {
   // Check if the command line contains the right number of arguments.
-  if( argc != 3 ) {
+  if( argc < 2 or argc > 3 ) {
     throw std::runtime_error(
-        std::string( "Usage: " ) + argv[ 0 ] + " <fasta_msa> <number of sequences>" );
+        std::string( "Usage: " ) + argv[ 0 ] + " <n> <fasta_msa|stdin>" );
   }
 
   SequenceSet in_set;
-  FastaReader().read( from_file( argv[ 1 ] ), in_set );
+  FastaReader().read( (argc == 2) ? from_stream( std::cin ) : from_file( argv[ 2 ] ), in_set );
 
-  const auto max  = std::min( (size_t)std::stoi( argv[ 2 ] ), in_set.size() );
-  const auto skip = in_set.size() - max;
+  bool const first_n = (argv[ 1 ][0] == '+');
+
+  auto const n_in = std::stoi( argv[ 1 ] );
+
+  if( n_in <= 0 ) {
+    throw std::runtime_error( "n must be nonnegative" );
+  }
+
+  auto const n = static_cast<size_t>(n_in);
+
+  auto const max  = std::min( n, in_set.size() );
+  auto const skip = (first_n) ? n : in_set.size() - max;
 
   FastaOutputIterator out { to_stream( std::cout ) };
   for( size_t i = skip; i < in_set.size(); ++i ) {
