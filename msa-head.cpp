@@ -30,16 +30,16 @@ using namespace genesis::utils;
 int main( int argc, char** argv )
 {
   // Check if the command line contains the right number of arguments.
-  if( argc != 3 ) {
-    LOG_INFO << "Usage: " << argv[ 0 ] << " <fasta_msa> <number of sequences>";
+  if( argc < 2 or argc > 3 ) {
+    LOG_INFO << "Usage: " << argv[ 0 ] << " <n> <fasta|stdin>";
     return 1;
   }
 
-  auto seq_file    = std::string( argv[ 1 ] );
-  const size_t num = std::stoi( argv[ 2 ] );
+  const size_t num = std::stoi( argv[ 1 ] );
+  auto seq_file    = std::string( argv[ 2 ] );
   auto writer      = FastaWriter();
 
-  auto iter = FastaInputIterator( from_file( seq_file ) );
+  auto iter = FastaInputIterator( (argc == 2) ? from_stream( std::cin ) : from_file( seq_file ) );
   for( size_t i = 0; iter and ( i < num ); ++i ) {
     writer.write_sequence( *iter, std::cout );
     iter.increment();

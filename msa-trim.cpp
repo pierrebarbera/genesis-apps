@@ -32,14 +32,14 @@ using namespace genesis::utils;
 int main( int argc, char** argv )
 {
   // Check if the command line contains the right number of arguments.
-  if( argc != 4 ) {
+  if( argc < 3 or argc > 4 ) {
     throw std::runtime_error(
-        std::string( "Usage: " ) + argv[ 0 ] + " <fasta_msa> <trim_left> <trim_right>" );
+        std::string( "Usage: " ) + argv[ 0 ] + " <trim_left> <trim_right> <fasta_msa|stdin>" );
   }
 
-  auto const infile     = std::string( argv[ 1 ] );
-  auto const trim_left  = std::stoi( argv[ 2 ] );
-  auto const trim_right = std::stoi( argv[ 3 ] );
+  auto const infile     = std::string( argv[ 3 ] );
+  auto const trim_left  = std::stoi( argv[ 1 ] );
+  auto const trim_right = std::stoi( argv[ 2 ] );
 
   if( ( trim_left < 0 ) or ( trim_right < 0 ) ) {
     throw std::runtime_error( "Both trim values must be >= 0!" );
@@ -47,7 +47,7 @@ int main( int argc, char** argv )
 
   size_t const total_trimmed = trim_left + trim_right;
 
-  auto fasta_in = FastaInputIterator( from_file( infile ) );
+  auto fasta_in = FastaInputIterator( (argc == 3) ? from_stream( std::cin ) : from_file( infile ) );
   FastaOutputIterator fasta_out { to_stream( std::cout ) };
 
   while( fasta_in ) {

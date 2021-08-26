@@ -35,7 +35,7 @@ int main( int argc, char** argv )
   // Check if the command line contains the right number of arguments.
   if( argc < 2 or argc > 3 ) {
     throw std::runtime_error(
-        std::string( "Usage: " ) + argv[ 0 ] + " <n> <fasta_msa|stdin>" );
+        std::string( "Usage: " ) + argv[ 0 ] + " <n> <fasta|stdin>" );
   }
 
   SequenceSet in_set;

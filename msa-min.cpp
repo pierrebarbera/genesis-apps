@@ -32,20 +32,20 @@ using namespace genesis::utils;
 int main( int argc, char** argv )
 {
   // Check if the command line contains the right number of arguments.
-  if( argc != 3 ) {
+  if( argc < 2 or argc > 3 ) {
     throw std::runtime_error(
-        std::string( "Usage: " ) + argv[ 0 ] + " <fasta_msa> <min-N>" );
+        std::string( "Usage: " ) + argv[ 0 ] + " <min-N> <fasta|stdin>" );
   }
 
-  auto const infile = std::string( argv[ 1 ] );
-  auto const min_N  = std::stoi( argv[ 2 ] );
+  auto const min_N  = std::stoi( argv[ 1 ] );
+  auto const infile = std::string( argv[ 2 ] );
 
   if( min_N < 0 ) {
     throw std::runtime_error("min-N must be positive");
   }
 
   auto fasta_in = FastaInputIterator(
-    (infile == "--") ? from_stream( std::cin ) : from_file( infile ) );
+    (argc == 2) ? from_stream( std::cin ) : from_file( infile ) );
 
   FastaOutputIterator fasta_out { to_stream( std::cout ) };
 

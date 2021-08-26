@@ -80,17 +80,17 @@ void remove_duplicates( SequenceSet& set )
 int main( int argc, char** argv )
 {
   // Check if the command line contains the right number of arguments.
-  if( argc != 3 ) {
+  if( argc < 2 or argc > 3 ) {
     throw std::runtime_error(
-        std::string( "Usage: " ) + argv[ 0 ] + " <msa_file> <number of sequences>" );
+        std::string( "Usage: " ) + argv[ 0 ] + " <number of sequences> <seqfile|stdin>" );
   }
 
   // Get labels of reference alignment.
-  auto in_set = read_any_seqfile( argv[ 1 ] );
+  auto in_set = read_any_seqfile( argv[ 2 ], (argc == 2) );
 
   remove_duplicates( in_set );
 
-  const auto num = static_cast< size_t >( std::stoi( argv[ 2 ] ) );
+  const auto num = static_cast< size_t >( std::stoi( argv[ 1 ] ) );
 
   // get random indices
   auto idx = get_rand_unique( num, 0, in_set.size() );

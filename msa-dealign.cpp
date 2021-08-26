@@ -32,14 +32,14 @@ using namespace genesis::utils;
 int main( int argc, char** argv )
 {
   // Check if the command line contains the right number of arguments.
-  if( argc != 2 ) {
+  if( argc != 2 or argc != 1 ) {
     throw std::runtime_error(
-        std::string( "Usage: " ) + argv[ 0 ] + " <fasta>" );
+        std::string( "Usage: " ) + argv[ 0 ] + " <fasta|stdin>" );
   }
 
   auto const infile       = std::string( argv[ 1 ] );
 
-  auto fasta_in = FastaInputIterator( from_file( infile ) );
+  auto fasta_in = FastaInputIterator( (argc == 1) ? from_stream( std::cin ) : from_file( infile ) );
   FastaOutputIterator fasta_out { to_stream( std::cout ) };
 
   while( fasta_in ) {

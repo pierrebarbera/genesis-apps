@@ -50,7 +50,7 @@ int main( int argc, char** argv )
   }
 
   auto fasta_in = FastaInputIterator(
-    (infile == "--") ? from_stream( std::cin ) : from_file( infile ) );
+    (infile == "-") ? from_stream( std::cin ) : from_file( infile ) );
 
   if (not fasta_in) {
     throw std::runtime_error("input fasta empty/invalid?");
