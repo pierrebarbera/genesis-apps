@@ -38,14 +38,13 @@ int main( int argc, char** argv )
   }
 
   auto const max_N  = std::stoi( argv[ 1 ] );
-  auto const infile = std::string( argv[ 2 ] );
 
   if( max_N < 0 ) {
     throw std::runtime_error("max-N must be positive");
   }
 
   auto fasta_in = FastaInputIterator(
-    (argc == 2) ? from_stream( std::cin ) : from_file( infile ) );
+    (argc == 2) ? from_stream( std::cin ) : from_file( argv[ 2 ] ) );
 
   FastaOutputIterator fasta_out { to_stream( std::cout ) };
 

@@ -37,9 +37,7 @@ int main( int argc, char** argv )
         std::string( "Usage: " ) + argv[ 0 ] + " <fasta|stdin>" );
   }
 
-  auto const infile       = std::string( argv[ 1 ] );
-
-  auto fasta_in = FastaInputIterator( (argc == 1) ? from_stream( std::cin ) : from_file( infile ) );
+  auto fasta_in = FastaInputIterator( (argc == 1) ? from_stream( std::cin ) : from_file( argv[ 1 ] ) );
   FastaOutputIterator fasta_out { to_stream( std::cout ) };
 
   while( fasta_in ) {

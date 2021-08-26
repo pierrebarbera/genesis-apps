@@ -37,7 +37,6 @@ int main( int argc, char** argv )
         std::string( "Usage: " ) + argv[ 0 ] + " <trim_left> <trim_right> <fasta_msa|stdin>" );
   }
 
-  auto const infile     = std::string( argv[ 3 ] );
   auto const trim_left  = std::stoi( argv[ 1 ] );
   auto const trim_right = std::stoi( argv[ 2 ] );
 
@@ -47,7 +46,7 @@ int main( int argc, char** argv )
 
   size_t const total_trimmed = trim_left + trim_right;
 
-  auto fasta_in = FastaInputIterator( (argc == 3) ? from_stream( std::cin ) : from_file( infile ) );
+  auto fasta_in = FastaInputIterator( (argc == 3) ? from_stream( std::cin ) : from_file( argv[ 3 ] ) );
   FastaOutputIterator fasta_out { to_stream( std::cout ) };
 
   while( fasta_in ) {

@@ -36,10 +36,9 @@ int main( int argc, char** argv )
   }
 
   const size_t num = std::stoi( argv[ 1 ] );
-  auto seq_file    = std::string( argv[ 2 ] );
   auto writer      = FastaWriter();
 
-  auto iter = FastaInputIterator( (argc == 2) ? from_stream( std::cin ) : from_file( seq_file ) );
+  auto iter = FastaInputIterator( (argc == 2) ? from_stream( std::cin ) : from_file( argv[ 2 ] ) );
   for( size_t i = 0; iter and ( i < num ); ++i ) {
     writer.write_sequence( *iter, std::cout );
     iter.increment();
